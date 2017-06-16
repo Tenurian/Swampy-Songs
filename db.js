@@ -35,6 +35,11 @@ var Song = mongoose.model('Song', SongSchema);
     // };
     var TempSong = [
         {
+            name: 'No Problem',
+            url: 'https://www.youtube.com/watch?v=Z_uO6NuKOuk',
+            votes: 100
+        },
+        {
             name: 'Snowcone',
             url: 'https://www.youtube.com/watch?v=amBBO4PqJKo',
             votes: 100

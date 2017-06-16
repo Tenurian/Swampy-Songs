@@ -1,0 +1,12 @@
+#songsTable{
+    width: 100%;
+}
+
+/*.songName,*/
+/*.voteButton,*/
+/*.voteButtonContainer,*/
+th,
+td{
+    text-align: center;
+}
+
