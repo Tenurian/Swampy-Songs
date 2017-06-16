@@ -1,0 +1,30 @@
+{
+  "name": "swampysongs.com",
+  "version": "0.1.0",
+  "description": "SwampySongs.com ",
+  "main": "app.js",
+  "dependencies": {
+    "express": "^4.15.3",
+    "mongoose": "^4.10.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "nodemon app"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Tenurian/Swampy-Songs.git"
+  },
+  "keywords": [
+    "Swampy",
+    "Songs",
+    "Music",
+    "MERN"
+  ],
+  "author": "Thomas Feuerborn, Jonathan Burk, Eric Suedmeyer",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/Tenurian/Swampy-Songs/issues"
+  },
+  "homepage": "https://github.com/Tenurian/Swampy-Songs#readme"
+}
