@@ -3,7 +3,7 @@
  */
 var express = require('express');
 var mongoose = require('mongoose');
-
+/*replace the url with the new mlab database*/
 // mongoose.connect('mongodb://production_user:production_password@ds139817.mlab.com:39817/psyke');
 mongoose.connect('mongodb://127.0.0.1/my_database');
 
@@ -20,19 +20,21 @@ var UserSchema = Schema({
 var User = mongoose.model('User', UserSchema);
 
 var SongSchema = Schema({
-    name: String,
-    url: String,
-    votes: { type: Number, default: 1 }
+    name: {type: String, required: true},
+    url: {type: String, required: true},
+    votes: { type: Number, default: 1 },
+    dateCreated: Date,
+    pingu: String
 });
-
 var Song = mongoose.model('Song', SongSchema);
 
+var AdminSchema = Schema({
+    username: {type: String, required: true, unique: true},
+    password: {type: String, required: true}
+});
+var Admin = mongoose.model('Admin', AdminSchema);
+
 (function () {
-    // var PublicRoom = {
-    //     room_name: 'Public Room',
-    //     online_members: [],
-    //     log: []
-    // };
     var TempSong = [
         {
             name: 'No Problem',
@@ -56,13 +58,24 @@ var Song = mongoose.model('Song', SongSchema);
         }
     ];
 
-    // for(var i = 0; i < TempSong.length; i++){
-    //     var dummySong = TempSong[i];
+    var Administrators = [
+        {
+            username: 'admin',
+            password: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8'
+        },
+        {
+            username: 'IndiaVenom',
+            password: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8'
+        },
+        {
+            username: 'Tenurian',
+            password: '64368cd484f6bbebb03878cff20476b6d28139a7172eb3cad0f995391a8962ee'
+        }
+    ];
+
     TempSong.forEach(function (dummySong) {
-        // console.log('dummySong: ', dummySong);
         Song.findOne({name: dummySong.name}).exec(function (err, song) {
             if(err) throw err;
-            // console.log('song: ', song);
             if(!song){
                 var newSong = new Song(dummySong);
                 newSong.save(function (err) {
@@ -72,28 +85,25 @@ var Song = mongoose.model('Song', SongSchema);
             }
         });
     });
-    // }
 
-    // Song.find({}).sort({votes: -1}).exec(function(err, songs){
-    //     if(err) throw err;
-    //     console.log(songs);
-    // });
-    // Room.findOne({room_name: PublicRoom.room_name}).exec(function(err, room){
-    //     if(err) throw err;
-    //     if(room){
-    //         console.log(room.room_name,' already exists.');
-    //     } else {
-    //         var room_inst = new Room(PublicRoom);
-    //         room_inst.save(function(err){
-    //             if(err) throw err;
-    //             console.log("Saved the room '"+PublicRoom.room_name+"'");
-    //         })
-    //     }
-    // });
+    Administrators.forEach(function(admin){
+        Admin.findOne({username: admin.username}).exec(function (err, found) {
+            if(err) throw err;
+
+            if(!found){
+                var newAdmin = new Admin(admin);
+                newAdmin.save(function (err) {
+                    if(err) throw err;
+                    console.log('New Admin saved');
+                });
+            }
+        })
+    });
 
 })();
 
 module.exports = {
     User: User,
-    Song: Song
+    Song: Song,
+    Admin: Admin
 };
