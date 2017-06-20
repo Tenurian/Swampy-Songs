@@ -93,6 +93,42 @@ app.post('/vote', function(req, res){
     })
 });
 
+app.use('/admin', function (req, res) {
+    res.sendFile(path.join(__dirname, '/public/admin.html'));
+});
+
+app.post('/changePassword', function (req,res) {
+   var oldPassword = req.body.oldPassword;
+   var newPassword = req.body.newPassword;
+
+   req.sendStatus(503);
+
+});
+
+app.post('/login', function (req, res) {
+    var username = req.body.username;
+    var password = req.body.password;
+    console.log(username);
+    console.log(password);
+
+    db.Admin.findOne({username: username}).exec(function(err, admin){
+        if(err) throw err;
+        console.log(admin);
+        console.log(admin.password === password);
+
+        if(admin.password === password){
+            res.send(JSON.stringify({
+                user: admin
+            }));
+        } else {
+            res.sendStatus(403);
+        }
+    });
+    // res.sendStatus(418);
+});
+
+/*ALL OTHER GET/POST/USE FUNCTIONS GO ABOVE THIS LINE*/
+
 app.use('/', function (req, res) {
     res.sendFile(path.join(__dirname, '/public/index.html'));
 });
