@@ -4,8 +4,8 @@
 var express = require('express');
 var mongoose = require('mongoose');
 /*replace the url with the new mlab database*/
-// mongoose.connect('mongodb://production_user:production_password@ds139817.mlab.com:39817/psyke');
-mongoose.connect('mongodb://127.0.0.1/my_database');
+mongoose.connect('mongodb://production-user:production-password@ds151062.mlab.com:51062/swampy-songs');
+// mongoose.connect('mongodb://127.0.0.1/my_database');
 
 var db = mongoose.connection;
 

@@ -6,7 +6,7 @@ var path = require('path');
 var bodyParser = require('body-parser');
 var db = require('./db');
 
-server.listen(80);
+server.listen(8082);
 
 // var app = express();
 

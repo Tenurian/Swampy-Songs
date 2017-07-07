@@ -6,8 +6,8 @@
 /*global PropType*/
 /*global ReactDOM*/
 /*global Redux*/
-
-const socket = io('http://localhost');
+// const socket = io('http://localhost:31415');
+const socket = io('https://swampy-songs-tenurian.c9users.io:8082');
 const Component = React.Component;
 
 const SongsApp = (state = {user: {}, songs: []}, action) => {
@@ -16,13 +16,10 @@ const SongsApp = (state = {user: {}, songs: []}, action) => {
             return action.obj;
         case 'update':
             if(state.user){
-                if(state.user === action.obj.user){
+                if(state.user._id === action.obj.user._id){
                     return action.obj;
                 } else {
-                    return {
-                        ...action.obj,
-                        ...state.user
-                    }
+                    return Object.assign({}, action.obj, {user: state.user});
                 }
             }
         default:
