@@ -1,9 +1,14 @@
 var express = require('express');
+var app = express();
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
 var path = require('path');
 var bodyParser = require('body-parser');
 var db = require('./db');
 
-var app = express();
+server.listen(80);
+
+// var app = express();
 
 var PORT = (process.env.port || '8080');
 
@@ -14,6 +19,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/pull', function (req, res) {
     console.log('/pull');
+    console.log('req.connection.remoteAddress: ',req.connection.remoteAddress);
     db.User.findOne({IP: req.connection.remoteAddress}).exec(function (err, user) {
         if(err) throw err;
         if(!user){
@@ -31,8 +37,8 @@ app.use('/pull', function (req, res) {
 
         db.Song.find({}).sort({votes: -1}).exec(function(err, songs){
             if(err) throw err;
-            console.log('User: ', user);
-            console.log('Songs: ', songs);
+            // console.log('User: ', user);
+            // console.log('Songs: ', songs);
             res.send(JSON.stringify({
                 user: user,
                 songs: songs
@@ -79,6 +85,7 @@ app.post('/vote', function(req, res){
                             if(err) throw err;
                             console.log('User: ', user);
                             console.log('Songs: ', songs);
+
                             res.send(JSON.stringify({
                                 user: user,
                                 songs: songs
@@ -125,6 +132,89 @@ app.post('/login', function (req, res) {
         }
     });
     // res.sendStatus(418);
+});
+
+io.on('connection', function (socket) {
+    console.log('user connected');
+    var ip = socket.handshake.address;
+    console.log('socket.handshake.address: ', ip);
+    db.User.findOne({IP: ip}).exec(function (err, user) {
+        if(err) throw err;
+        if(!user){
+            user = new db.User({
+                IP: ip,
+                votes: []
+            });
+            user.save(function(err){
+                if(err) throw err;
+                console.log('New user added');
+            });
+        } else {
+            console.log('Getting existing user...');
+        }
+
+        db.Song.find({}).sort({votes: -1}).exec(function(err, songs){
+            if(err) throw err;
+            // console.log('User: ', user);
+            // console.log('Songs: ', songs);
+            console.log('emit: load_data');
+            socket.emit('load_data', {
+                user: user,
+                songs: songs
+            });
+        });
+
+    });
+    socket.on('vote', (song_id) => {
+        console.log('vote');
+        console.log(song_id);
+        db.User.findOne({IP: ip}).exec(function (err, user) {
+            if (err) throw err;
+            console.log(user);
+            if(!user){
+                user = new db.User({
+                    IP: ip,
+                    votes: []
+                });
+                user.save(function(err){
+                    if(err) throw err;
+                    console.log('New user added');
+                });
+            }
+            db.Song.findOne({_id: song_id}).exec(function (err, song) {
+                if(err) throw err;
+                console.log(song);
+                if(song){
+                    if(user.votes.indexOf(song._id) === -1){
+                        song.votes++;
+                        user.votes.push(song._id);
+                    } else {
+                        song.votes--;
+                        user.votes.splice(user.votes.indexOf(song._id), 1);
+                    }
+                    user.markModified('propChanged');
+                    song.save(function(err){
+                        if(err) throw err;
+                        user.save(function(err){
+                            if(err) throw err;
+                            db.Song.find({}).sort({votes: -1}).exec(function(err, songs){
+                                if(err) throw err;
+                                console.log(songs);
+                                // console.log('User: ', user);
+                                // console.log('Songs: ', songs);
+                                io.sockets.emit('update', {
+                                    user: user,
+                                    songs: songs
+                                });
+                            });
+                        });
+                    });
+                } else {
+                    res.sendStatus(404);
+                }
+            })
+        })
+    });
 });
 
 /*ALL OTHER GET/POST/USE FUNCTIONS GO ABOVE THIS LINE*/

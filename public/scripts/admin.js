@@ -8,6 +8,15 @@
 /*global React*/
 /*global ReactDOM*/
 
+let socket = io.connect('http://localhost');
+socket.on('news', (data) => {
+    console.log(data);
+    socket.emit('my other event', { my: 'data' });
+});
+
+socket.on('update', () => {
+
+});
 
 function setCookie(cookie_name, cookie_value, expiration_seconds) {
     let d = new Date();
