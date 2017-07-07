@@ -3,11 +3,13 @@
  */
 /*global $*/
 /*global React*/
-/*global PropType*/
+/*global PropTypse*/
 /*global ReactDOM*/
 /*global Redux*/
-// const socket = io('http://localhost:31415');
-const socket = io('https://swampy-songs-tenurian.c9users.io:8082');
+
+const socket = io('http://localhost:8082');
+// const socket = io('https://swampy-songs-tenurian.c9users.io:8082');
+
 const Component = React.Component;
 
 const SongsApp = (state = {user: {}, songs: []}, action) => {
@@ -39,27 +41,8 @@ class App extends Component{
     }
 
     doVote(song_id){
-        // const { store } = this.context;
-        // const state = store.getState();
-        // let that = this;
         console.log('do vote');
-        // console.log(this);
-        // console.log(song_id);
         socket.emit('vote',song_id);
-        // $.ajax({
-        //     url: '/vote',
-        //     type: 'POST',
-        //     contentType: 'application/json',
-        //     data: JSON.stringify({
-        //         song_id: song_id
-        //     }),
-        //     success(d){
-        //         console.log('success!');
-        //         let data = JSON.parse(d);
-        //         console.log(data);
-        //         that.setState(data);
-        //     }
-        // });
     }
 
     render() {
@@ -138,5 +121,4 @@ ReactDOM.render(
     <Provider store={store}>
         <App />
     </Provider>
-
     , document.getElementById('root'));

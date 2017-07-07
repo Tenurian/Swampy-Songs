@@ -7,103 +7,15 @@ var bodyParser = require('body-parser');
 var db = require('./db');
 
 server.listen(8082);
-
-// var app = express();
-
 var PORT = (process.env.port || '8080');
 
 app.set('port', PORT);
 
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
-
-app.use('/pull', function (req, res) {
-    console.log('/pull');
-    console.log('req.connection.remoteAddress: ',req.connection.remoteAddress);
-    db.User.findOne({IP: req.connection.remoteAddress}).exec(function (err, user) {
-        if(err) throw err;
-        if(!user){
-            user = new db.User({
-                IP: req.connection.remoteAddress,
-                votes: []
-            });
-            user.save(function(err){
-                if(err) throw err;
-                console.log('New user added');
-            });
-        } else {
-            console.log('Getting existing user...');
-        }
-
-        db.Song.find({}).sort({votes: -1}).exec(function(err, songs){
-            if(err) throw err;
-            // console.log('User: ', user);
-            // console.log('Songs: ', songs);
-            res.send(JSON.stringify({
-                user: user,
-                songs: songs
-            }));
-        });
-
-    });
-});
-
-app.post('/vote', function(req, res){
-    console.log('/vote');
-    var song_id = req.body.song_id;
-
-
-    db.User.findOne({IP: req.connection.remoteAddress}).exec(function (err, user) {
-        if (err) throw err;
-        if(!user){
-            user = new db.User({
-                IP: req.connection.remoteAddress,
-                votes: []
-            });
-            user.save(function(err){
-                if(err) throw err;
-                console.log('New user added');
-            });
-        }
-        db.Song.findOne({_id: song_id}).exec(function (err, song) {
-            if(err) throw err;
-            if(song){
-                if(user.votes.indexOf(song._id) === -1){
-                    song.votes++;
-                    user.votes.push(song._id);
-                } else {
-                    song.votes--;
-                    user.votes.splice(user.votes.indexOf(song._id), 1);
-                }
-
-                user.markModified('propChanged');
-                song.save(function(err){
-                    if(err) throw err;
-                    user.save(function(err){
-                        if(err) throw err;
-                        db.Song.find({}).sort({votes: -1}).exec(function(err, songs){
-                            if(err) throw err;
-                            console.log('User: ', user);
-                            console.log('Songs: ', songs);
-
-                            res.send(JSON.stringify({
-                                user: user,
-                                songs: songs
-                            }));
-                        });
-                    });
-                });
-            } else {
-                res.sendStatus(404);
-            }
-        })
-    })
-});
-
 app.use('/admin', function (req, res) {
     res.sendFile(path.join(__dirname, '/public/admin.html'));
 });
-
 app.post('/changePassword', function (req,res) {
    var oldPassword = req.body.oldPassword;
    var newPassword = req.body.newPassword;
@@ -111,7 +23,6 @@ app.post('/changePassword', function (req,res) {
    req.sendStatus(503);
 
 });
-
 app.post('/login', function (req, res) {
     var username = req.body.username;
     var password = req.body.password;
@@ -138,7 +49,7 @@ io.on('connection', function (socket) {
     console.log('user connected');
     var ip = socket.handshake.address;
     console.log('socket.handshake.address: ', ip);
-    db.User.findOne({IP: ip}).exec(function (err, user) {
+    db.User.findOne({IP: ip}).exec((err, user) => {
         if(err) throw err;
         if(!user){
             user = new db.User({
@@ -155,8 +66,6 @@ io.on('connection', function (socket) {
 
         db.Song.find({}).sort({votes: -1}).exec(function(err, songs){
             if(err) throw err;
-            // console.log('User: ', user);
-            // console.log('Songs: ', songs);
             console.log('emit: load_data');
             socket.emit('load_data', {
                 user: user,
@@ -214,6 +123,34 @@ io.on('connection', function (socket) {
                 }
             })
         })
+    });
+    socket.on('admin-update', (data) => {
+        console.log(data);
+        let {song} = data;
+        db.Admin.findOne(data.user).exec((err, admin)=>{
+            if(err) throw err;
+            console.log('admin found!');
+            console.log('song: '+JSON.stringify(song));
+            db.Song.findOne({_id: song._id}).exec((err, s) => {
+                if(err) throw err;
+                console.log('s: ',s);
+                s.name = song.name;
+                s.url = song.url;
+                s.votes = song.votes;
+                s.save((err, hana) => {
+                    if(err) throw err;
+                    console.log('saved song: ',hana);
+                    db.Song.find({}).sort({votes: -1}).exec(function(err, songs){
+                        if(err) throw err;
+                        console.log(songs);
+                        socket.broadcast.emit('update', {
+                            user: {IP: '', votes: []},
+                            songs: songs
+                        });
+                    });
+                });
+            });
+        });
     });
 });
 
