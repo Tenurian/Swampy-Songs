@@ -120,9 +120,11 @@ class Admin extends Component {
         console.log(state);
         return(
             <div>
-                <h1>Welcome, {user.username}.</h1>
-                <div><button className="btn btn-danger" onClick={() => this.logout}>Logout</button></div>
-                <h3>Songs:</h3>
+                <div style={{textAlign: 'center', width: '100%'}}>
+                    <h1 style={{textAlign: 'center'}}>Welcome, {user.username}.</h1>
+                    <div><button className="btn btn-danger" onClick={() => this.logout}>Logout</button></div>
+                    <h3>Songs:</h3>
+                </div>
                 <table id="songsTable">
                     <thead>
                         <tr>
@@ -138,6 +140,8 @@ class Admin extends Component {
                                 {/*<td className="songName">{song.name}</td>*/}
                                 <td>
                                     <input
+                                        style={{paddingLeft: '10px', paddingRight: '10px'}}
+                                        className="form-input"
                                         value={song.votes}
                                         type="number"
                                         onChange={e => {
